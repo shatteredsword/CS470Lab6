@@ -10,59 +10,60 @@
 unsigned long input_matrix[N][N];
 	unsigned long long threadless[N][N], threaded[N][N], squared_threads[N][N];
 
-struct index {
-   int i; /* row */
-   int j; /* column */
+struct index
+{
+	int i;
+	int j;
 };
 
+/*
 //The function used by threaded[N][N]
 static inline void *thread_method(void *param) {
-   struct index *data = param; // the structure that holds our data
+   struct index *entry = param; // the structure that holds our data
    int sum = 0; //the counter and sum
 
    //Row multiplied by column
    for(int n = 0; n< N; n++){
-      sum += input_matrix[data->i][n] * input_matrix[n][data->j];
+      sum += input_matrix[entry->i][n] * input_matrix[n][entry->j];
    }
    //assign the sum to its coordinate
-   squared_threads[data->i][data->j] = sum;
+   squared_threads[entry->i][entry->j] = sum;
 
    //Exit the thread
    pthread_exit(0);
 }
+*/
 
 //The function used by squared_threads[N][N]
-static inline void *squared_thread_method(void *param) {
-   struct index *data = param; // the structure that holds our data
-   int sum = 0; //the counter and sum
+static inline void *squared_thread_method(void *param)
+{
+	struct index *entry = param; // the structure that holds our data
+	int sum = 0; //the counter and sum
 
-   //Row multiplied by column
-   for(int n = 0; n< N; n++){
-      sum += input_matrix[data->i][n] * input_matrix[n][data->j];
-   }
-   //assign the sum to its coordinate
-   squared_threads[data->i][data->j] = sum;
+	//Row multiplied by column
+	for(int n = 0; n < N; n++)
+	{
+		sum += input_matrix[entry -> i][n] * input_matrix[n][entry -> j];
+	}
+	//assign the sum to its coordinate
+	squared_threads[entry -> i][entry -> j] = sum;
 
-   //Exit the thread
-   pthread_exit(0);
+	//Exit the thread
+	pthread_exit(0);
 }
 
 unsigned long get_random()
 {
-	/*
-	unsigned char *buf;
-	int num;
-	 int RAND_bytes(buf, num);
-	return &buf;
-	*/
 	return rand() % 100;
 }
+
 int main()
 {
+	int i, j, k; //incrementers declared here to reduce time of each inner for loop
 	//fill both matrices
-	for (int i = 0; i < N; i++)
+	for (i = 0; i < N; i++)
 	{
-		for (int j = 0; j < N; j++)
+		for (j = 0; j < N; j++)
 		{
 			input_matrix[i][j] = get_random();
 			threadless[i][j] = 0;
@@ -72,56 +73,49 @@ int main()
 	}
 
 	//mulitply matrices w/o threads
-	printf("%s\n","threadless starting");
-	for (int i = 0; i < N; i++)
+	printf("%s\n", "threadless starting");
+	for (i = 0; i < N; i++)
 	{
-		for (int j = 0; j < N; j++)
+		for (j = 0; j < N; j++)
 		{
-			for (int k = 0; k < N; k++)
+			for (k = 0; k < N; k++)
 			{
 				threadless[i][j] += input_matrix[i][k] * input_matrix[k][j];
 			}
 		}
 	}
-	printf("%s\n","threadless completed");
+	printf("%s\n", "threadless completed");
 
 	//multiply matrices using N^2 threads
-	int count = 0;
-	printf("%s\n","threaded starting");
-	for(int i = 0; i < N; i++) {
-   		for(int j = 0; j < N; j++) {
-   		//Assign a row and column for each thread
-		struct index *data = (struct index *) malloc(sizeof(struct index));
-		data->i = i;
-		data->j = j;
-		/* Now create the thread passing it data as a parameter */
-		pthread_t tid;       //Thread ID
-		pthread_attr_t attr; //Set of thread attributes
-		//Get the default attributes
-		pthread_attr_init(&attr);
-		//Create the thread
-		pthread_create(&tid, &attr, squared_thread_method, data);
-		//Make sure the parent waits for all thread to complete
-		pthread_join(tid, NULL);
-		count++;
+	printf("%s\n", "squared_threaded starting");
+	for(i = 0; i < N; i++)
+	{
+   		for(j = 0; j < N; j++)
+   		{
+	   		//Assign a row and column for each thread
+			struct index *entry = (struct index*) malloc(sizeof(struct index));
+			entry -> i = i;
+			entry -> j = j;
+			/* Now create the thread passing it data as a parameter */
+			pthread_t thread_id;       //Thread ID
+			//Create the thread
+			pthread_create(&thread_id, NULL, squared_thread_method, entry);
+			//Make sure the parent waits for all thread to complete
+			pthread_join(thread_id, NULL);
 		}
 	}
-	printf("%s\n","threaded completed");
-
-
-
+	printf("%s\n", "squared_threaded completed");
 
 /*
 	//print result
-	for (int i = 0; i < N; i++)
+	for (i = 0; i < N; i++)
 	{
-		for (int j = 0; j < N; j++)
+		for (j = 0; j < N; j++)
 		{
 			printf("%llu ", c[i][j]);
 		}
 		printf("\n");
 	}
 */
-
 	return 0;
 }
