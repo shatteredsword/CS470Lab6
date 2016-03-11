@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
+#include <time.h>
 //#include <openssl/rand.h>
 //#include <time.h>
 
@@ -59,6 +60,12 @@ unsigned long get_random()
 
 int main()
 {
+
+struct timespec begin, end;
+double elapsed;
+
+
+
 	int i, j, k; //incrementers declared here to reduce time of each inner for loop
 	//fill both matrices
 	for (i = 0; i < N; i++)
@@ -74,6 +81,7 @@ int main()
 
 	//mulitply matrices w/o threads
 	printf("%s\n", "threadless starting");
+	clock_gettime(CLOCK_MONOTONIC, &begin);
 	for (i = 0; i < N; i++)
 	{
 		for (j = 0; j < N; j++)
@@ -84,10 +92,17 @@ int main()
 			}
 		}
 	}
-	printf("%s\n", "threadless completed");
+	clock_gettime(CLOCK_MONOTONIC, &end);
+	elapsed = end.tv_sec - begin.tv_sec;
+	elapsed += (end.tv_nsec - begin.tv_nsec) / 1000000000.0;
+
+	printf("%s%f%s\n", "threadless completed in ", elapsed, " seconds");
+
+
 
 	//multiply matrices using N^2 threads
 	printf("%s\n", "squared_threaded starting");
+	clock_gettime(CLOCK_MONOTONIC, &begin);
 	for(i = 0; i < N; i++)
 	{
    		for(j = 0; j < N; j++)
@@ -104,7 +119,10 @@ int main()
 			pthread_join(thread_id, NULL);
 		}
 	}
-	printf("%s\n", "squared_threaded completed");
+	clock_gettime(CLOCK_MONOTONIC, &end);
+	elapsed = end.tv_sec - begin.tv_sec;
+	elapsed += (end.tv_nsec - begin.tv_nsec) / 1000000000.0;
+	printf("%s%f%s\n", "squared_threaded completed in ", elapsed, " seconds");
 
 /*
 	//print result
