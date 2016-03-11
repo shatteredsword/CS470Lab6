@@ -17,23 +17,23 @@ struct index
 	int j;
 };
 
-/*
 //The function used by threaded[N][N]
-static inline void *thread_method(void *param) {
-   struct index *entry = param; // the structure that holds our data
-   int sum = 0; //the counter and sum
+static inline void *threaded_method(void *param)
+{
+	struct index *entry = param; // the structure that holds our data
+	int sum = 0; //the counter and sum
 
-   //Row multiplied by column
-   for(int n = 0; n< N; n++){
-      sum += input_matrix[entry->i][n] * input_matrix[n][entry->j];
-   }
-   //assign the sum to its coordinate
-   squared_threads[entry->i][entry->j] = sum;
+	//Row multiplied by column
+	for(int n = 0; n < N; n++)
+	{
+		sum += input_matrix[entry -> i][n] * input_matrix[n][entry -> j];
+	}
+	//assign the sum to its coordinate
+	threaded[entry -> i][entry -> j] = sum;
 
-   //Exit the thread
-   pthread_exit(0);
+	//Exit the thread
+	pthread_exit(0);
 }
-*/
 
 //The function used by squared_threads[N][N]
 static inline void *squared_thread_method(void *param)
@@ -60,11 +60,8 @@ unsigned long get_random()
 
 int main()
 {
-
-struct timespec begin, end;
-double elapsed;
-
-
+	struct timespec begin, end;
+	double elapsed;
 
 	int i, j, k; //incrementers declared here to reduce time of each inner for loop
 	//fill both matrices
@@ -98,7 +95,29 @@ double elapsed;
 
 	printf("%s%f%s\n", "threadless completed in ", elapsed, " seconds");
 
-
+	//multiply matrices using N threads
+	printf("%s\n", "threaded starting");
+	clock_gettime(CLOCK_MONOTONIC, &begin);
+	for(i = 0; i < N; i++)
+	{
+   		for(j = 0; j < N; j++)
+   		{
+	   		//Assign a row and column for each thread
+			struct index *entry = (struct index*) malloc(sizeof(struct index));
+			entry -> i = i;
+			entry -> j = j;
+			/* Now create the thread passing it data as a parameter */
+			pthread_t thread_id;       //Thread ID
+			//Create the thread
+			pthread_create(&thread_id, NULL, threaded_method, entry);
+			//Make sure the parent waits for all thread to complete
+			pthread_join(thread_id, NULL);
+		}
+	}
+	clock_gettime(CLOCK_MONOTONIC, &end);
+	elapsed = end.tv_sec - begin.tv_sec;
+	elapsed += (end.tv_nsec - begin.tv_nsec) / 1000000000.0;
+	printf("%s%f%s\n", "threaded completed in ", elapsed, " seconds");
 
 	//multiply matrices using N^2 threads
 	printf("%s\n", "squared_threaded starting");
