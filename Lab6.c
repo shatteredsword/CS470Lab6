@@ -77,12 +77,42 @@ int main()
 	{
 		for (j = 0; j < N; j++)
 		{
-			input_matrix[i][j] = get_random();
-			threadless[i][j] = 0;
-			//printf("%lu ", a[i][j]);
+			input_matrix[i][j] = 0;
 		}
-		//printf("\n");
 	}
+
+	//get user input
+	char input[2];
+	printf("do you want to use an identity matrix? (y/n): \n");
+	scanf("%s", input);
+
+	if (*input == 'n')
+	{
+		//fill matrix
+		for (i = 0; i < N; i++)
+		{
+			for (j = 0; j < N; j++)
+			{
+				input_matrix[i][j] = get_random();
+			}
+		}
+	}
+	else if (*input == 'y')
+	{
+
+		//make identity matrix
+		for (i = 0; i < N; i++)
+		{
+			input_matrix[i][i] = 1;
+		}
+	}
+	else
+	{
+		//print error code
+		printf("please enter a valid option\n");
+		return 0;
+	}
+
 
 	//mulitply matrices w/o threads
 	printf("%s\n", "threadless starting");
